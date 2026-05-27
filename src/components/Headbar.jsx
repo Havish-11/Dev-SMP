@@ -1,3 +1,5 @@
+import { useTheme } from "../context/ThemeContext";
+
 const NAV_ITEMS = [
   { label: "Shop" },
   { label: "Collections" },
@@ -6,6 +8,7 @@ const NAV_ITEMS = [
 ];
 
 function Headbar() {
+  const { darkMode, toggleTheme } = useTheme();
   return (
     <header className="header">
       <div className="header-brand">
@@ -18,6 +21,7 @@ function Headbar() {
         </div>
       </div>
 
+
       <nav className="header-nav">
         {NAV_ITEMS.map((item) => (
           <span key={item.label} className="nav-link">
@@ -26,11 +30,17 @@ function Headbar() {
         ))}
       </nav>
 
-      <div className="header-actions">
-        <button type="button" className="btn btn-sm btn-ghost" disabled>
-          Sign In
-        </button>
-      </div>
+  <nav className="header-actions">
+   <button type="button" className="btn btn-ghost" onClick={toggleTheme}>
+    {darkMode ? "Light" : "Dark"}
+  </button>
+
+  <button type="button" className="btn btn-sm btn-ghost">
+    Sign In
+  </button>
+</nav>
+
+
     </header>
   );
 }

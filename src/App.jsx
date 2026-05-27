@@ -5,9 +5,11 @@ import ItemPage from "./pages/ItemPage";
 import About from "./pages/About";
 import Collections from "./pages/Collections";
 import Contact from "./pages/Contact";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
+    <ThemeProvider>
     <div className="app">
       <Headbar />
 
@@ -21,6 +23,7 @@ function App() {
         </Routes>
       </main>
     </div>
+    </ThemeProvider>
   );
 }
 
