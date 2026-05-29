@@ -32,7 +32,7 @@ function Headbar() {
 
   <nav className="header-actions">
    <button type="button" className="btn btn-ghost" onClick={toggleTheme}>
-    {darkMode ? "Light" : "Dark"}
+    {darkMode ? "Dark" : "Light"}
   </button>
 
   <button type="button" className="btn btn-sm btn-ghost">
