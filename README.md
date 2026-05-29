@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Frontend Project Tasks
 Final goal: https://project-sample-peach.vercel.app/
 ## Necessary Tasks
@@ -25,3 +26,6 @@ Final goal: https://project-sample-peach.vercel.app/
    - Filter by category  
 
 ---
+=======
+# Dev-SMP
+>>>>>>> c9dc035dc6aa241a2537c030908c9f6ff9a8791a
