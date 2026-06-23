@@ -1,63 +1,39 @@
-# Multi-Agent Log Analyzer
+I was not able to use the Gemini api keys. So I have used Groq API. Please excuse me for this
 
-A multi-agent pipeline that analyzes server logs, classifies issues, suggests fixes, and validates them — powered by **Groq** (LLaMA 3).
+## Base Agent file
 
-## Agents
+It holds the single shared Groq client and also registers the agent on the MessageBus at construction time.
+Also I have set the max_toxens = 4096 and raises a clear Runtime Error if the model hits the token limit.
 
-| Agent | Role |
-|---|---|
-| `LogAnalysisAgent` | Parses raw logs into structured entries |
-| `IssueClassificationAgent` | Groups errors into typed issues with severity |
-| `FixSuggestionAgent` | Proposes shell commands to fix each issue |
-| `ValidationAgent` | Reviews commands for safety before approval |
-| `OrchestratorAgent` | Drives the full pipeline end to end |
 
-## Setup
+## Log Analysis Agent
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+It turns unstructured text into structured data. It send raw log to the LLM with a strict JSON schema prompt. Counts total errors and warnings, etc.
 
-# 2. Set your Groq API key (free at https://console.groq.com)
-cp .env.example .env
-# Edit .env and paste your key
+## Issue Classification Agent
 
-# 3. Run with sample logs
-python main.py
+It reads all the log entries and identifies patterns. Assigns each issue a severity level: low, medium, high or critical.
+Also returns the frequency of occurence of each error.
 
-# 4. Or pass your own log file
-python main.py /var/log/app.log
+## Fix Suggestion Agent
 
-# 5. Or pipe logs directly
-tail -n 100 /var/log/syslog | python main.py
-```
+Reads the issue type, severity, description, and frequency. Generates a list of actionable shell commands (e.g. restart a service, free disk space, renew a certificate).
+Self-assigns a confidence score (0.0–1.0) and a risk_level (low, medium, or high).
 
-## Changing the Model
+## Validation Agent
 
-Edit `MODEL` in `agents/base_agent.py`:
+Reviews each shell command for destructive, irreversible, or privilege-escalating operations.
+Flags anything suspicious as a warning. A fix can be is_safe=True but approved=False if it needs human review first.
 
-| Model | Speed | Quality | Context |
-|---|---|---|---|
-| `llama-3.1-8b-instant` | ⚡ Fastest | Good | 128k |
-| `llama-3.3-70b-versatile` | Fast | Best | 128k |
-| `mixtral-8x7b-32768` | Fast | Great | 32k |
+## Orchestrator Agent
 
-## Project Structure
+Instantiates all four specialist agents at startup.
+Calls them in order: LogAnalysis → Classification → Fix → Validate.
+Runs the Fix + Validate loop once per classified issue (not once per log line).
+Collects all results into a dict[error_type, WorkflowResult] and returns it to main.py.
 
-```
-log-analyzer/
-├── agents/
-│   ├── base_agent.py            # Groq client + shared helpers
-│   ├── log_analysis_agent.py
-│   ├── issue_classification_agent.py
-│   ├── fix_suggestion_agent.py
-│   ├── validation_agent.py
-│   └── orchestrator_agent.py
-├── models/
-│   └── schemas.py               # Pydantic models
-├── utils/
-│   └── message_bus.py           # Async inter-agent messaging
-├── main.py
-├── requirements.txt
-└── .env.example
-```
+## Message Bus
+
+An async pub/sub system that agents can use to communicate without direct references to each other. Each agent gets its own asyncio.Queue when it registers. The bus keeps a full _history of every message sent, useful for debugging and auditing the pipeline.
+
+
